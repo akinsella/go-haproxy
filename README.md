@@ -1,4 +1,6 @@
-#A Go Library for Haproxy Socket Interactions
+Go Library for Haproxy Socket Interactions
+========================
 
-
-- [ ] Server maintenance mode on/off
+TODO:
+1. Server maintenance mode on/off.
+2. Reset statistics.
