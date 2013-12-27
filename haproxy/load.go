@@ -84,6 +84,7 @@ func parseLoad(headers []string, body [][]string, backendName string) (load []*L
   return load, nil
 }
 
+// A helper func to enable the manual parsing above. Hopefully obsoleted by a true scanning.
 func findHeader(headers []string, header string) (int, error) {
   for i, h := range headers {
     if h == header {
