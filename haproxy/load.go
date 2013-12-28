@@ -30,7 +30,7 @@ type Load struct {
   Current     int    `csv:"scur"`
   Max         int    `csv:"smax"`
   Health      string `csv:"status"`
-  FailedCheck string `csv:"chkdown"`
+  FailedCheck int    `csv:"chkdown"`
 }
 
 // Haproxy CSV first entry is like: # pvname, svname,......
@@ -45,7 +45,7 @@ func seperateHeaders(resp [][]string) ([]string, [][]string) {
 
 // TODO: Use reflect with the Load struct to scan the data into []*Load automatically.
 func parseLoad(headers []string, body [][]string, backendName string) (load []*Load, err error) {
-  var nameIndex, pxNameIndex, currentLoadIndex, maxLoadIndex int
+  var nameIndex, healthIndex, failedCheckIndex, pxNameIndex, currentLoadIndex, maxLoadIndex int
 
   // A bunch of manual parsing. See above TODO.
   if pxNameIndex, err = findHeader(headers, "pxname"); err != nil {
@@ -60,6 +60,12 @@ func parseLoad(headers []string, body [][]string, backendName string) (load []*L
   if maxLoadIndex, err = findHeader(headers, "smax"); err != nil {
     return nil, err
   }
+  if failedCheckIndex, err = findHeader(headers, "chkdown"); err != nil {
+    return nil, err
+  }
+  if healthIndex, err = findHeader(headers, "status"); err != nil {
+    return nil, err
+  }
 
   // Used for the parsed numbers within the loop.
   var n int
@@ -70,6 +76,7 @@ func parseLoad(headers []string, body [][]string, backendName string) (load []*L
     }
     l := new(Load)
     l.Name = fields[nameIndex]
+    l.Health = fields[healthIndex]
     if n, err = strconv.Atoi(fields[currentLoadIndex]); err != nil {
       return nil, err
     }
@@ -78,6 +85,10 @@ func parseLoad(headers []string, body [][]string, backendName string) (load []*L
       return nil, err
     }
     l.Max = n
+    if n, err = strconv.Atoi(fields[failedCheckIndex]); err != nil {
+      return nil, err
+    }
+    l.FailedCheck = n
     load = append(load, l)
   }
 
