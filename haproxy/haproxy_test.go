@@ -3,6 +3,7 @@ package haproxy_test
 import (
   "bytes"
   "encoding/csv"
+  "errors"
   "github.com/macb/go-haproxy/haproxy"
   "io"
   "testing"
@@ -34,7 +35,13 @@ func TestShowStat(t *testing.T) {
 
   r := csv.NewReader(bytes.NewReader(resp))
   s, err := r.ReadAll()
-  t.Logf("%#v", s[0][0][2:])
+  if err != nil {
+    t.Error(err)
+  }
+
+  if s[0][0] != "# pxname" {
+    t.Error(errors.New("Pxname was expected, but not found."))
+  }
 }
 
 func TestGetLoad(t *testing.T) {
