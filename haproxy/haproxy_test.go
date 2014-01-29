@@ -5,9 +5,6 @@ import (
   "testing"
 )
 
-// TODO: Create stub socket to mock Haproxy responses.
-// For now though, it assumes you have Haproxy up with a socket at /tmp/haproxy
-
 func setupTest(t *testing.T) testListener {
   return NewTestListener(t)
 }
