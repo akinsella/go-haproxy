@@ -4,7 +4,6 @@ import (
   "bytes"
   "encoding/csv"
   "errors"
-  "io"
   "reflect"
   "strconv"
 )
@@ -14,7 +13,7 @@ var headerIndices map[string]int
 // A wrapper for getting the load for a given backend.
 func (h Haproxy) GetLoad(backendName string) ([]*Load, error) {
   resp, err := h.Socket.ShowStat()
-  if err != nil && err != io.EOF {
+  if err != nil {
     return nil, err
   }
 
@@ -95,6 +94,7 @@ func buildIndices(headers []string) map[string]int {
   r := reflect.TypeOf(Load{})
   for i := 0; i < r.NumField(); i++ {
     f := r.Field(i)
+
     // TODO Terribly inefficient. Loops through the headers for every field. :\
     h[f.Name], _ = findHeader(headers, f.Tag.Get("csv"))
   }
