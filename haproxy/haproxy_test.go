@@ -67,7 +67,7 @@ func TestGetLoad(t *testing.T) {
       continue
     }
     if l.Name != expectedName {
-      t.Errorf("Expected %s, got %s.", expectedName, load[1].Name)
+      t.Errorf("Expected %s, got %s.", expectedName, l.Name)
     }
   }
 }
