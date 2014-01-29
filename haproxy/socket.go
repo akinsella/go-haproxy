@@ -57,7 +57,7 @@ func read(c net.Conn) (resp []byte, err error) {
     case io.EOF:
       // EOF signals the finished message. Append the last bit of information and return.
       resp = append(resp, buf[:n]...)
-      return resp, err
+      return resp, nil
     case nil:
       // No EOF means there is more to come append and read again.
       resp = append(resp, buf[:n]...)
