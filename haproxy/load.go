@@ -172,18 +172,18 @@ func parseLoadAsMap(headers []string, body [][]string, backendName string) (load
             f := r.FieldByName(name)
             switch f.Kind() {
                 case reflect.String:
-                l[n] = fields[index]
+                l[name] = fields[index]
                 case reflect.Int:
                 val := fields[index]
                 switch val {
                     case "":
-                    l[n] = 0
+                    l[name] = 0
                     default:
                     n, err = strconv.Atoi(fields[index])
                     if err != nil {
                         return nil, err
                     }
-                    l[n] = int64(n)
+                    l[name] = int64(n)
                 }
             }
         }
