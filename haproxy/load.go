@@ -12,19 +12,36 @@ var headerIndices map[string]int
 
 // A wrapper for getting the load for a given backend.
 func (h Haproxy) GetLoad(backendName string) ([]*Load, error) {
-  resp, err := h.Socket.ShowStat()
-  if err != nil {
-    return nil, err
-  }
+    resp, err := h.Socket.ShowStat()
+    if err != nil {
+        return nil, err
+    }
 
-  r := csv.NewReader(bytes.NewReader(resp))
-  stats, err := r.ReadAll()
-  if err != nil {
-    return nil, err
-  }
+    r := csv.NewReader(bytes.NewReader(resp))
+    stats, err := r.ReadAll()
+    if err != nil {
+        return nil, err
+    }
 
-  headers, body := seperateHeaders(stats)
-  return parseLoad(headers, body, backendName)
+    headers, body := seperateHeaders(stats)
+    return parseLoad(headers, body, backendName)
+}
+
+// A wrapper for getting the load for a given backend.
+func (h Haproxy) GetLoadAsMap(backendName string) ([]*map[string]interface{}, error) {
+    resp, err := h.Socket.ShowStat()
+    if err != nil {
+        return nil, err
+    }
+
+    r := csv.NewReader(bytes.NewReader(resp))
+    stats, err := r.ReadAll()
+    if err != nil {
+        return nil, err
+    }
+
+    headers, body := seperateHeaders(stats)
+    return parseLoadAsMap(headers, body, backendName)
 }
 
 type Load struct {
@@ -135,6 +152,45 @@ func parseLoad(headers []string, body [][]string, backendName string) (load []*L
   }
 
   return load, nil
+}
+
+func parseLoadAsMap(headers []string, body [][]string, backendName string) (load []*map[string]interface{}, err error) {
+    pxNameIndex, _ := findHeader(headers, "pxname")
+    headerIndices = buildIndices(headers)
+
+    // Used for the parsed numbers within the loop.
+    var n int
+    for _, fields := range body {
+        // Skip any other servers than the requested.
+        if fields[pxNameIndex] != backendName {
+            continue
+        }
+
+        l := new(map[string]interface{})
+        r := reflect.ValueOf(l).Elem()
+        for name, index := range headerIndices {
+            f := r.FieldByName(name)
+            switch f.Kind() {
+                case reflect.String:
+                l[n] = fields[index]
+                case reflect.Int:
+                val := fields[index]
+                switch val {
+                    case "":
+                    l[n] = 0
+                    default:
+                    n, err = strconv.Atoi(fields[index])
+                    if err != nil {
+                        return nil, err
+                    }
+                    l[n] = int64(n)
+                }
+            }
+        }
+        load = append(load, l)
+    }
+
+    return load, nil
 }
 
 func buildIndices(headers []string) map[string]int {
